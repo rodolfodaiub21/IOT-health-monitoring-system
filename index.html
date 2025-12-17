@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Health Monitoring Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      color: #58a6ff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 0 auto;
+      max-width: 1100px;
+    }
+
+    .card {
+      background: #161b22;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #000;
+      border: 1px solid #30363d;
+    }
+
+    .help-card {
+      grid-column: 1 / -1;
+      height: 180px;
+    }
+
+    .value {
+      font-size: 2.4em;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    .heart {
+      font-size: 70px;
+      transition: color 0.5s ease;
+    }
+
+    .status-box {
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 8px;
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+
+    .good {
+      background: #13331a;
+      color: #00ff5e;
+    }
+
+    .warning {
+      background: #332b00;
+      color: #ffd700;
+    }
+
+    .danger {
+      background: #331616;
+      color: #ff4d4d;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<h1>Real-Time Patient Monitoring</h1>
+
+<div class="grid">
+
+  <!-- Temperature -->
+  <div class="card">
+    <h2>Temperature</h2>
+    <div id="temp" class="value"> °C</div>
+    <div id="tempstatus" class="status-box"></div>
+  </div>
+
+  <!-- Humidity -->
+  <div class="card">
+    <h2>Humidity</h2>
+    <div id="humidity" class="value">-- %</div>
+    <div id="humstatus" class="status-box"></div>
+  </div>
+
+  <!-- Heart Rate -->
+  <div class="card">
+    <h2>Heart Rate</h2>
+    <div id="heartIcon" class="heart">❤️</div>
+    <div id="bpm" class="value">-- BPM</div>
+    <div id="bpmStatus" class="status-box">--</div>
+  </div>
+
+  <!-- Movement -->
+  <div class="card">
+    <h2>Movement</h2>
+    <div id="moveStatus" class="status-box"></div>
+  </div>
+
+  <!-- Help Button -->
+  <div class="card help-card" id="helpCard">
+    <h2>Help Request</h2>
+    <div id="helpStatus" class="status-box">--</div>
+  </div>
+
+</div>
+
+<script>
+function update() {
+    fetch('/data')
+    .then(resp => resp.json())
+    .then(data => {
+        const alarm = document.getElementById("alarmsound")
+        // TEMPERATURE
+        document.getElementById("temp").textContent = data.temp + " °C";
+
+        // HUMIDITY
+        document.getElementById("humidity").textContent = data.humidity + " %";
+
+        // BPM
+        document.getElementById("bpm").textContent = data.bpm + " BPM";
+        const heart = document.getElementById("heartIcon");
+        const bpmStatus = document.getElementById("bpmStatus");
+        const tempstat = document.getElementById("tempstatus");
+        const humstat= document.getElementById("humstatus"); 
+        if(data.humidity >=  50 ){
+            humstat.style.color = "#ffd700";
+            humstat.textContent="too humid, probability for bacteria increased";
+            humstat.className="status-box warning"
+        }else{
+            humstat.style.color = "#00ff5e";
+            humstat.textContent="Ideal";
+            humstat.className="status-box good"
+        }
+        if(data.temp <= 25 ){
+            tempstat.style.color = "#ffd700";
+            tempstat.textContent="Getting colder than ideal";
+            tempstat.className="status-box warning"
+        }
+        else if (data.temp >= 30 ) {
+            heart.style.color = "#ffd700";
+            bpmStatus.textContent = "Getting Hotter than ideal";
+            bpmStatus.className = "status-box warning";
+        }
+        else{
+            tempstat.style.color = "#00ff5e";
+            tempstat.textContent="Ideal temperature";
+            tempstat.className="status-box good"
+        }
+
+        if (data.bpm <= 80) {
+            heart.style.color = "#00ff5e";
+            bpmStatus.textContent = "Stable";
+            bpmStatus.className = "status-box good";
+        } 
+        else if (data.bpm <= 110) {
+            heart.style.color = "#ffd700";
+            bpmStatus.textContent = "Elevated Heart Rate";
+            bpmStatus.className = "status-box warning";
+        }
+        else {
+            heart.style.color = "#ff4d4d";
+            bpmStatus.textContent = "Dangerously High BPM";
+            bpmStatus.className = "status-box danger";
+        }
+
+        // MOVEMENT STATUS
+        const moveStatus = document.getElementById("moveStatus");
+        if (data.running == 0) {
+            moveStatus.textContent = "Patient is resting.";
+            moveStatus.className = "status-box good";
+        } else {
+            moveStatus.textContent = "⚠️ Patient is moving too much!";
+            moveStatus.className = "status-box warning";
+        }
+
+        // HELP
+        const helpStatus = document.getElementById("helpStatus");
+        const helpCard = document.getElementById("helpCard");
+
+        if (data.Buttonstate == 0) {
+            helpStatus.textContent = "PATIENT IS ASKING FOR HELP!";
+            helpStatus.className = "status-box danger";
+            helpCard.style.background = "#331616";
+            helpCard.style.borderColor = "#ff4d4d";
+            
+
+        } else {
+            helpStatus.textContent = "No help requested.";
+            helpStatus.className = "status-box good";
+            helpCard.style.background = "#161b22";
+            helpCard.style.borderColor = "#30363d";
+            
+            alarm.currentTime =0 ;
+        }
+
+    });
+}
+
+setInterval(update, 1000);
+update();
+</script>
+
+</body>
+</html>
