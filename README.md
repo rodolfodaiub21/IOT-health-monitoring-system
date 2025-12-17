@@ -38,7 +38,7 @@ The system is composed of three main components:
 
 - Microcontroller Arduino and Raspberry PI
 - Heartbeat (Pulse) Sensor
-- Temperature & Humidity Sensor (e.g., DHT series)
+- Temperature & Humidity Sensor 
 - Tilt Sensor
 - Power supply and wiring components
 
