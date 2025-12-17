@@ -46,7 +46,7 @@ The system is composed of three main components:
 
 ## 💻 Software Stack
 
-- **Embedded Programming:** C / C++ / Arduino framework  
+- **Embedded Programming:** C/Arduino framework  
 - **Backend:** Python (Flask)  
 - **Frontend:** HTML & CSS
 - **Communication:** HTTP / Serial / Wi-Fi  
